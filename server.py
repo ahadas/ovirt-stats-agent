@@ -47,7 +47,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
         str = json.dumps(output)
 
-        s.send_response(900)
+        s.send_response(200)
         s.send_header("Content-type", "text/json")
         s.end_headers()
         s.wfile.write(str)
