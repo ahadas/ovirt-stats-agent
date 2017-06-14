@@ -18,7 +18,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         output = {}
 
         for stat in stats:
-            vals = stat.split('-')
+            vals = stat.split('$')
             vm = vals[0]
             type = vals[1]
             if vm not in output:
@@ -68,50 +68,50 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             vm = st['host']
             type = st['type']
             if type == 'ps_cputime':
-                s.server.cache[vm+'-cpu_user'] = st['values'][0]
-                s.server.cache[vm+'-cpu_sys'] = st['values'][1]
-                s.server.cache[vm+'-sample_time'] = st['time']
+                s.server.cache[vm+'$cpu_user'] = st['values'][0]
+                s.server.cache[vm+'$cpu_sys'] = st['values'][1]
+                s.server.cache[vm+'$sample_time'] = st['time']
 
             elif type == 'virt_cpu_total':
-                s.server.cache[vm+'-cpu_total'] = st['values'][0]
+                s.server.cache[vm+'$cpu_total'] = st['values'][0]
 
             elif type == 'if_octets':
                 iface = st['type_instance']
-                s.server.cache[vm+'-rx_bytes-'+iface] = \
+                s.server.cache[vm+'$rx_bytes$'+iface] = \
                     st['values'][0]
-                s.server.cache[vm+'-tx_bytes-'+iface] = \
+                s.server.cache[vm+'$tx_bytes$'+iface] = \
                     st['values'][1]
-                s.server.cache[vm+'-iface_time-'+iface] = \
+                s.server.cache[vm+'$iface_time$'+iface] = \
                     st['time']
 
             elif type == 'if_dropped':
                 iface = st['type_instance']
-                s.server.cache[vm+'-rx_dropped-'+iface] = \
+                s.server.cache[vm+'$rx_dropped$'+iface] = \
                     st['values'][0]
-                s.server.cache[vm+'-tx_dropped-'+iface] = \
+                s.server.cache[vm+'$tx_dropped$'+iface] = \
                     st['values'][1]
 
             elif type == 'disk_octets':
                 disk = st['type_instance']
-                s.server.cache[vm+'-rd_bytes-'+disk] = \
+                s.server.cache[vm+'$rd_bytes$'+disk] = \
                     st['values'][0]
-                s.server.cache[vm+'-wr_bytes-'+disk] = \
+                s.server.cache[vm+'$wr_bytes$'+disk] = \
                     st['values'][1]
-                s.server.cache[vm+'-disk_time-'+disk] = \
+                s.server.cache[vm+'$disk_time$'+disk] = \
                     st['time']
 
             elif type == 'disk_ops':
                 disk = st['type_instance']
-                s.server.cache[vm+'-rd_ops-'+disk] = \
+                s.server.cache[vm+'$rd_ops$'+disk] = \
                     st['values'][0]
-                s.server.cache[vm+'-wr_ops-'+disk] = \
+                s.server.cache[vm+'$wr_ops$'+disk] = \
                     st['values'][1]
 
             elif type == 'disk_time':
                 disk = st['type_instance']
-                s.server.cache[vm+'-rd_time-'+disk] = \
+                s.server.cache[vm+'$rd_time$'+disk] = \
                     st['values'][0]
-                s.server.cache[vm+'-wr_time-'+disk] = \
+                s.server.cache[vm+'$wr_time$'+disk] = \
                     st['values'][1]
 
 class http_server:
