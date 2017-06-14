@@ -45,6 +45,9 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     disks[disk] = {}
                 disks[disk][type] = stats[stat]
 
+            elif type == 'balloon':
+                output[vm]['balloon_cur'] = stats[stat]
+
         str = json.dumps(output)
 
         s.send_response(200)
@@ -74,6 +77,9 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
             elif type == 'virt_cpu_total':
                 s.server.cache[vm+'$cpu_total'] = st['values'][0]
+
+            elif st['type_instance'] == 'actual_balloon':
+                s.server.cache[vm+'$balloon'] = st['values'][0]
 
             elif type == 'if_octets':
                 iface = st['type_instance']
