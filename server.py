@@ -37,8 +37,8 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     ifaces[iface] = {}
                 ifaces[iface][type] = stats[stat]
 
-            elif type in ['rd_bytes', 'wr_bytes', 'rd_ops', 'wr_ops',
-                          'rd_time', 'wr_time', 'disk_time']:
+            elif type in ['rd_bytes', 'wr_bytes', 'rd_ops', 'wr_ops', 'fl_ops',
+                          'rd_time', 'wr_time', 'disk_time', 'fl_time']:
                 disk = vals[2]
                 disks = output[vm]['disks']
                 if disk not in disks:
@@ -119,6 +119,16 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                     st['values'][0]
                 s.server.cache[vm+'$wr_time$'+disk] = \
                     st['values'][1]
+
+            elif type == 'total_time_in_ms':
+                disk = st['type_instance'][6:]
+                s.server.cache[vm+'$fl_time$'+disk] = \
+                    st['values'][0]
+
+            elif type == 'total_requests':
+                disk = st['type_instance'][6:]
+                s.server.cache[vm+'$fl_ops$'+disk] = \
+                    st['values'][0]
 
 class http_server:
     def __init__(self):
