@@ -43,17 +43,17 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 disks = output[vm]['disks']
                 if disk not in disks:
                     disks[disk] = {}
-                disks[disk][type] = stats[stat]
+                disks[disk][type] = str(stats[stat])
 
             elif type == 'balloon':
-                output[vm]['balloon_cur'] = stats[stat]
+                output[vm]['balloon_cur'] = str(stats[stat])
 
-        str = json.dumps(output)
+        string = json.dumps(output)
 
         s.send_response(200)
         s.send_header("Content-type", "text/json")
         s.end_headers()
-        s.wfile.write(str)
+        s.wfile.write(string)
 
     def do_POST(s):
         print time.asctime(), 'got something'
