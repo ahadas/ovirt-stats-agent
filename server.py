@@ -1,20 +1,23 @@
+import collectd
+import threading
 import time
 import json
 import BaseHTTPServer
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 
-HOST_NAME = '10.35.1.90' # !!!REMEMBER TO CHANGE THIS!!!
+collectd.info('spam: Loading Python plugin:') 
+HOST_NAME = '10.35.0.50' # !!!REMEMBER TO CHANGE THIS!!!
 PORT_NUMBER = 9002 # Maybe set this to 9000.
+cache = {}
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-    def do_HEAD(s):
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
     def do_GET(s):
+        global cache 
+        stats = cache
+        cache = {}
         """Respond to a GET request."""
-        stats = s.server.cache
-        s.server.cache = {}
+        collectd.info('MyHandler')
+
         output = {}
 
         for stat in stats:
@@ -55,85 +58,77 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         s.end_headers()
         s.wfile.write(string)
 
-    def do_POST(s):
-        print time.asctime(), 'got something'
-        content_len = int(s.headers.getheader('content-length', 0))
-        post_body = s.rfile.read(content_len)
+def write(vl, data=None):
+    global cache
+    collectd.info('Writing data (vl=%r)' % (vl))
+    if vl.plugin == 'virt':
+        vm = vl.host
+        type = vl.type
+        if type == 'ps_cputime':
+            cache[vm+'$cpu_user'] = vl.values[0]
+            cache[vm+'$cpu_sys'] = vl.values[1]
+            cache[vm+'$sample_time'] = vl.time
 
-        stats = json.loads(post_body)
+        elif type == 'virt_cpu_total':
+            cache[vm+'$cpu_total'] = vl.values[0]
 
-        print stats
+        elif vl.type_instance == 'actual_balloon':
+            cache[vm+'$balloon'] = vl.values[0]
 
-        for st in stats:
-            if st['plugin'] != 'virt':
-                continue
+        elif type == 'if_octets':
+            iface = vl.type_instance
+            cache[vm+'$rx_bytes$'+iface] = \
+                vl.values[0]
+            cache[vm+'$tx_bytes$'+iface] = \
+                vl.values[1]
+            cache[vm+'$iface_time$'+iface] = \
+                vl.time
 
-            vm = st['host']
-            type = st['type']
-            if type == 'ps_cputime':
-                s.server.cache[vm+'$cpu_user'] = st['values'][0]
-                s.server.cache[vm+'$cpu_sys'] = st['values'][1]
-                s.server.cache[vm+'$sample_time'] = st['time']
+        elif type == 'if_dropped':
+            iface = vl.type_instance
+            cache[vm+'$rx_dropped$'+iface] = \
+                vl.values[0]
+            cache[vm+'$tx_dropped$'+iface] = \
+                vl.values[1]
 
-            elif type == 'virt_cpu_total':
-                s.server.cache[vm+'$cpu_total'] = st['values'][0]
+        elif type == 'disk_octets':
+            disk = vl.type_instance
+            cache[vm+'$rd_bytes$'+disk] = \
+                vl.values[0]
+            cache[vm+'$wr_bytes$'+disk] = \
+                vl.values[1]
+            cache[vm+'$disk_time$'+disk] = \
+                vl.time
 
-            elif st['type_instance'] == 'actual_balloon':
-                s.server.cache[vm+'$balloon'] = st['values'][0]
+        elif type == 'disk_ops':
+            disk = vl.type_instance
+            cache[vm+'$rd_ops$'+disk] = \
+                vl.values[0]
+            cache[vm+'$wr_ops$'+disk] = \
+                vl.values[1]
 
-            elif type == 'if_octets':
-                iface = st['type_instance']
-                s.server.cache[vm+'$rx_bytes$'+iface] = \
-                    st['values'][0]
-                s.server.cache[vm+'$tx_bytes$'+iface] = \
-                    st['values'][1]
-                s.server.cache[vm+'$iface_time$'+iface] = \
-                    st['time']
+        elif type == 'disk_time':
+            disk = vl.type_instance
+            cache[vm+'$rd_time$'+disk] = \
+                vl.values[0]
+            cache[vm+'$wr_time$'+disk] = \
+                vl.values[1]
 
-            elif type == 'if_dropped':
-                iface = st['type_instance']
-                s.server.cache[vm+'$rx_dropped$'+iface] = \
-                    st['values'][0]
-                s.server.cache[vm+'$tx_dropped$'+iface] = \
-                    st['values'][1]
+        elif type == 'total_time_in_ms':
+            disk = vl.type_instance[6:]
+            cache[vm+'$fl_time$'+disk] = \
+                vl.values[0]
 
-            elif type == 'disk_octets':
-                disk = st['type_instance']
-                s.server.cache[vm+'$rd_bytes$'+disk] = \
-                    st['values'][0]
-                s.server.cache[vm+'$wr_bytes$'+disk] = \
-                    st['values'][1]
-                s.server.cache[vm+'$disk_time$'+disk] = \
-                    st['time']
+        elif type == 'total_requests':
+            disk = vl.type_instance[6:]
+            cache[vm+'$fl_ops$'+disk] = \
+                vl.values[0]
 
-            elif type == 'disk_ops':
-                disk = st['type_instance']
-                s.server.cache[vm+'$rd_ops$'+disk] = \
-                    st['values'][0]
-                s.server.cache[vm+'$wr_ops$'+disk] = \
-                    st['values'][1]
-
-            elif type == 'disk_time':
-                disk = st['type_instance']
-                s.server.cache[vm+'$rd_time$'+disk] = \
-                    st['values'][0]
-                s.server.cache[vm+'$wr_time$'+disk] = \
-                    st['values'][1]
-
-            elif type == 'total_time_in_ms':
-                disk = st['type_instance'][6:]
-                s.server.cache[vm+'$fl_time$'+disk] = \
-                    st['values'][0]
-
-            elif type == 'total_requests':
-                disk = st['type_instance'][6:]
-                s.server.cache[vm+'$fl_ops$'+disk] = \
-                    st['values'][0]
-
-class http_server:
-    def __init__(self):
+def init_callback():
+    def init():
+        collectd.info('I got a thread1!')
         server = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
-        server.cache = {}
+        collectd.info('I got a thread2!')
         print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
         try:
             server.serve_forever()
@@ -142,9 +137,8 @@ class http_server:
         server.server_close()
         print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
-class main:
-    def __init__(self):
-        self.server = http_server()
+    t = threading.Thread(target=init)
+    t.start()   
 
-if __name__ == '__main__':
-    m = main()
+collectd.register_write(write)
+collectd.register_init(init_callback)
