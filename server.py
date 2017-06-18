@@ -30,7 +30,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             if type in ['sample_time', 'cpu_user', 'cpu_sys', 'cpu_total']:
                 if 'ps_cpu' not in output[vm]:
                     output[vm]['ps_cpu'] = {}
-                output[vm]['ps_cpu'][type] = stats[stat]
+                output[vm]['ps_cpu'][type] = str(stats[stat])
 
             elif type in ['rx_bytes', 'tx_bytes', 'iface_time',
                           'rx_dropped', 'tx_dropped']:
@@ -38,7 +38,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                 ifaces = output[vm]['network']
                 if iface not in ifaces:
                     ifaces[iface] = {}
-                ifaces[iface][type] = stats[stat]
+                ifaces[iface][type] = str(stats[stat])
 
             elif type in ['rd_bytes', 'wr_bytes', 'rd_ops', 'wr_ops', 'fl_ops',
                           'rd_time', 'wr_time', 'disk_time', 'fl_time']:
