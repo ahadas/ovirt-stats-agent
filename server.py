@@ -73,7 +73,7 @@ def write(vl, data=None):
             cache[vm+'$cpu_total'] = vl.values[0]
 
         elif vl.type_instance == 'actual_balloon':
-            cache[vm+'$balloon'] = vl.values[0]
+            cache[vm+'$balloon'] = int(vl.values[0])
 
         elif type == 'if_octets':
             iface = vl.type_instance
