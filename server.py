@@ -3,11 +3,14 @@ import threading
 import time
 import json
 import BaseHTTPServer
+import ssl
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 
 collectd.info('spam: Loading Python plugin:') 
 HOST_NAME = '0.0.0.0'
 PORT_NUMBER = 9002 # Maybe set this to 9000.
+CERTFILE_PATH = "/root/server.pem"
+
 cache = {}
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -128,6 +131,8 @@ def init_callback():
     def init():
         collectd.info('I got a thread1!')
         server = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
+#        server.socket = ssl.wrap_socket(server.socket, certfile=CERTFILE_PATH,
+#                                        server_side=True)
         collectd.info('I got a thread2!')
         print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
         try:
