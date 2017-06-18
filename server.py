@@ -129,18 +129,14 @@ def write(vl, data=None):
 
 def init_callback():
     def init():
-        collectd.info('I got a thread1!')
         server = HTTPServer((HOST_NAME, PORT_NUMBER), MyHandler)
 #        server.socket = ssl.wrap_socket(server.socket, certfile=CERTFILE_PATH,
 #                                        server_side=True)
-        collectd.info('I got a thread2!')
-        print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             pass
         server.server_close()
-        print time.asctime(), "Server Stops - %s:%s" % (HOST_NAME, PORT_NUMBER)
 
     t = threading.Thread(target=init)
     t.start()   
