@@ -6,7 +6,7 @@ import BaseHTTPServer
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 
 collectd.info('spam: Loading Python plugin:') 
-HOST_NAME = '10.35.0.50' # !!!REMEMBER TO CHANGE THIS!!!
+HOST_NAME = '0.0.0.0'
 PORT_NUMBER = 9002 # Maybe set this to 9000.
 cache = {}
 
